@@ -1,0 +1,25 @@
+{
+  "name": "course-gpt-agent-worker",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node build/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "typescript": "^5.6.2"
+  },
+  "dependencies": {
+    "@langchain/community": "^0.3.3",
+    "@langchain/core": "^0.3.3",
+    "@langchain/langgraph": "^0.2.9",
+    "@langchain/openai": "^0.3.2",
+    "bullmq": "^5.13.2",
+    "dotenv": "^16.4.5",
+    "ioredis": "^5.4.1"
+  }
+}
