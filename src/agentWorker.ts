@@ -1,10 +1,10 @@
 import {Worker} from "bullmq"
-import { CHAT_JOB_QUEUE_NAME } from "./globals"
 import {Redis} from "ioredis"
 import "dotenv/config"
 
 const REDIS_URL = process.env.REDIS_URL ?? "localhost:6379"
 const WORKER_CONCURRENCY = Number.parseInt(process.env.WORKER_CONCURRENCY ?? "10")
+const CHAT_JOB_QUEUE_NAME = process.env.CHAT_JOB_QUEUE_NAME ?? "chat-job"
 
 const redisConnection = new Redis(REDIS_URL, {
   maxRetriesPerRequest: null,
