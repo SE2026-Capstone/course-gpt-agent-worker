@@ -7,6 +7,7 @@ import "dotenv/config"
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY
 
+// Annotations are how graph state is represented in LangGraph
 export const GraphAnnotation = Annotation.Root({
     ...MessagesAnnotation.spec,
 
@@ -193,9 +194,23 @@ The explanation field should contain an explanation of the actions taken to extr
     }
 }
 
-// RAG search and answer
+// Todo: RAG search and answer
+const semanticSearchAndAnswer = async (state: typeof GraphAnnotation.State) => {
+    console.log("semanticSearchAndAnswer")
+    return
+}
 
-// decide if a list of courses would enhance the system response
+// Todo: decide if a list of courses would enhance the system response
+const decideCourseList = async (state: typeof GraphAnnotation.State) => {
+    console.log("decideCourseList")
+    return
+}
+
+// Todo: decide if output makes sense
+const validateOutput = async (state: typeof GraphAnnotation.State) => {
+    console.log("validateOutput")
+    return
+}
 
 // return json
 const outputNode = async (state: typeof GraphAnnotation.State) => {
