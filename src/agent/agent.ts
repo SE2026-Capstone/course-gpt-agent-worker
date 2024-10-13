@@ -4,6 +4,7 @@ import {ChatPromptTemplate, FewShotChatMessagePromptTemplate, PromptTemplate} fr
 import {START, END} from "@langchain/langgraph"
 import {z} from "zod"
 import "dotenv/config"
+import { vectorSimilaritySearch } from "../ragQueries"
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY
 
@@ -197,7 +198,52 @@ The explanation field should contain an explanation of the actions taken to extr
 // Todo: RAG search and answer
 const semanticSearchAndAnswer = async (state: typeof GraphAnnotation.State) => {
     console.log("semanticSearchAndAnswer")
-    return
+    // RAG search on chromadb + filter 
+    const { context: context, documents} = await vectorSimilaritySearch(state);
+    console.log("context", context);
+    console.log("documents", documents);
+
+    // add documents to langraph state 
+    state.retrievedDocuments = documents;
+
+    const promptString = `
+You are a helpful assistant that can answer questions about the context.
+Answer the question based only on the following context:
+{context}
+ - -
+Answer the question based on the above context: {question}
+`
+
+    // use prompt to get answer 
+    const prompt = ChatPromptTemplate.fromMessages([
+        ["system", promptString]
+    ]);
+    
+
+    const response = await prompt.pipe(new ChatOpenAI({
+        openAIApiKey: OPENAI_API_KEY,
+        temperature: 0,
+        modelName: "gpt-4o-mini"
+    }).bind({
+        response_format: { type: "json_object"}
+    })).invoke({
+        context: context,
+        question: state.rawUserChat
+    })
+
+    const responseSchema = z.object({
+        answer: z.string(),
+    })
+
+    try {
+        const result = responseSchema.parse(JSON.parse(response.content.toString()))
+        return {
+            answer: result.answer,
+        }
+    } catch (e) {
+        console.log("error", e)
+        return null
+    }
 }
 
 // Todo: decide if a list of courses would enhance the system response
@@ -209,6 +255,24 @@ const decideCourseList = async (state: typeof GraphAnnotation.State) => {
 // Todo: decide if output makes sense
 const validateOutput = async (state: typeof GraphAnnotation.State) => {
     console.log("validateOutput")
+    const promptString = 
+`Your an AI that helps validate the output of the system.
+Validate that the system output is of the form described below.
+A JSON object that adheres to the following rules:
+
+# Rules
+{{
+    extracted_query: string,
+    explanation: string
+}}
+
+The extracted_query field should contain the extracted query snippet taken from the original user message.
+The explanation field should contain an explanation of the actions taken to extract the query. This explanation should be concise and to the point.
+
+# Output format
+If the output is not valid, return "Invalid"
+If the output is valid, return "Valid"
+`
     return
 }
 
