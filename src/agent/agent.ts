@@ -195,16 +195,16 @@ The explanation field should contain an explanation of the actions taken to extr
     }
 }
 
-// Todo: RAG search and answer
 const semanticSearchAndAnswer = async (state: typeof GraphAnnotation.State) => {
     console.log("semanticSearchAndAnswer")
     // RAG search on chromadb + filter 
-    const { context: context, documents} = await vectorSimilaritySearch(state);
-    console.log("context", context);
+    const documents  = await vectorSimilaritySearch(state);
     console.log("documents", documents);
 
     // add documents to langraph state 
     state.retrievedDocuments = documents;
+
+    const context = documents.map((doc) => doc.pageContent).join("\n\n");
 
     const promptString = `
 You are a helpful assistant that can answer questions about the context.
@@ -246,13 +246,13 @@ Answer the question based on the above context: {question}
     }
 }
 
-// Todo: decide if a list of courses would enhance the system response
+
 const decideCourseList = async (state: typeof GraphAnnotation.State) => {
     console.log("decideCourseList")
     return
 }
 
-// Todo: decide if output makes sense
+
 const validateOutput = async (state: typeof GraphAnnotation.State) => {
     console.log("validateOutput")
     const promptString = 

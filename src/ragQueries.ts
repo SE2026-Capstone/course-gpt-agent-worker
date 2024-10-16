@@ -23,18 +23,15 @@ export const vectorSimilaritySearch = async (state: typeof GraphAnnotation.State
 
     // perform vector similarity search
     // vectorStore.similaritySearchWithScore can be used to get scores if we want to filter by score
-    const documents = await vectorStore.similaritySearch(state.semanticSearchQuery || state.rawUserChat, 3);
-    
-    // check if there are documents
-    if (documents.length === 0) {
-        console.log('No matching documents found.');
-        return { context: '', documents: [] };
+    const documents = await vectorStore.similaritySearchWithScore(state.semanticSearchQuery || state.rawUserChat, 10);
+
+    // return the top 5 documents with the highest score 
+    if (documents.length > 0) {
+      const sortedDocuments = documents.sort((a, b) => b[1] - a[1]);
+      return sortedDocuments.map((doc) => doc[0]).slice(0, 5);
     }
 
-    // combine the context from matching documents
-    const context = documents.map((doc) => doc.pageContent).join('\n\n - -\n\n');
-
-    return { context, documents };
+    return [];
 };
 
 // hybrid search 
