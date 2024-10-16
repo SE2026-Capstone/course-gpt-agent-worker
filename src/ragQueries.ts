@@ -16,14 +16,10 @@ const vectorStore = new Chroma(embeddings, {
   });
 
 
-// Thoughts: can probably turn this into a retreiver: https://js.langchain.com/docs/integrations/vectorstores/chroma/#query-by-turning-into-retriever
-// vector similarity search 
 export const vectorSimilaritySearch = async (state: typeof GraphAnnotation.State) => {
     console.log("vectorSimilaritySearch");
 
-    // perform vector similarity search
-    // vectorStore.similaritySearchWithScore can be used to get scores if we want to filter by score
-    const documents = await vectorStore.similaritySearchWithScore(state.semanticSearchQuery || state.rawUserChat, 10);
+    const documents = await vectorStore.similaritySearchWithScore(state.semanticSearchQuery || state.rawUserChat, 10, );
 
     // return the top 5 documents with the highest score 
     if (documents.length > 0) {
