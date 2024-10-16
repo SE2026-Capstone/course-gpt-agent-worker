@@ -285,8 +285,14 @@ const outputNode = async (state: typeof GraphAnnotation.State) => {
 // graph compilation
 const agentGraph = new StateGraph(GraphAnnotation)
     .addNode("semanticSearchQueryExtractionNode", semanticSearchQueryExtractionNode)
+    .addNode("semanticSearchAndAnswerNode", semanticSearchAndAnswer)
+    .addNode("decideCourseListNode", decideCourseList)
+    .addNode("validateOutputNode", validateOutput)
     .addNode("outputNode", outputNode)
-    .addEdge("semanticSearchQueryExtractionNode", "outputNode")
+    .addEdge("semanticSearchQueryExtractionNode", "semanticSearchAndAnswerNode")
+    .addEdge("semanticSearchAndAnswerNode", "decideCourseListNode")
+    .addEdge("decideCourseListNode", "validateOutputNode")
+    .addEdge("validateOutputNode", "outputNode")
     .addConditionalEdges(START, initialFilteringEdge, {
         true: "semanticSearchQueryExtractionNode",
         false: END
