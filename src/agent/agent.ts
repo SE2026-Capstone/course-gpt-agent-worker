@@ -197,6 +197,7 @@ The explanation field should contain an explanation of the actions taken to extr
 
 const semanticSearchAndAnswer = async (state: typeof GraphAnnotation.State) => {
     console.log("semanticSearchAndAnswer")
+    console.log(state);
     // RAG search on chromadb + filter 
     const documents  = await vectorSimilaritySearch(state);
     console.log("documents", documents);
