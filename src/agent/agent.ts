@@ -21,6 +21,9 @@ export const GraphAnnotation = Annotation.Root({
     // retrieved course documents from ChromaDB
     retrievedDocuments: Annotation<any>, // TODO: type this
 
+    // answers field 
+    answers: Annotation<string[]>,
+
 
 })
 
@@ -197,15 +200,13 @@ The explanation field should contain an explanation of the actions taken to extr
 
 const semanticSearchAndAnswer = async (state: typeof GraphAnnotation.State) => {
     console.log("semanticSearchAndAnswer")
-    console.log(state);
+    console.log('state', state);
     // RAG search on chromadb + filter 
     const documents  = await vectorSimilaritySearch(state);
     console.log("documents", documents);
 
-    // add documents to langraph state 
-    state.retrievedDocuments = documents;
-
-    const context = documents.map((doc) => doc.pageContent).join("\n\n");
+    const context = documents.map((doc) =>`Course Name: ${doc.metadata.id}\nCourse Content:${doc.pageContent}`).join("\n\n") 
+    console.log('context', context); 
 
     const promptString = `
 You are a helpful assistant that can answer questions about the context.
@@ -225,25 +226,17 @@ Answer the question based on the above context: {question}
         openAIApiKey: OPENAI_API_KEY,
         temperature: 0,
         modelName: "gpt-4o-mini"
-    }).bind({
-        response_format: { type: "json_object"}
     })).invoke({
         context: context,
         question: state.rawUserChat
     })
 
-    const responseSchema = z.object({
-        answer: z.string(),
-    })
+    console.log("response", response);
 
-    try {
-        const result = responseSchema.parse(JSON.parse(response.content.toString()))
-        return {
-            answer: result.answer,
-        }
-    } catch (e) {
-        console.log("error", e)
-        return null
+    
+    return {
+        answer: response.content.toString(),
+        retrievedDocuments: documents
     }
 }
 
@@ -322,28 +315,10 @@ const testNode = async (state: typeof GraphAnnotation.State): Promise<{ success:
 
 // graph compilation
 const agentGraph = new StateGraph(GraphAnnotation)
-    // .addNode("semanticSearchQueryExtractionNode", semanticSearchQueryExtractionNode)
-    // .addNode("semanticSearchAndAnswerNode", semanticSearchAndAnswer)
-    // .addNode("decideCourseListNode", decideCourseList)
-    // .addNode("validateOutputNode", validateOutput)
-    // .addNode("outputNode", outputNode)
-    // .addEdge("semanticSearchQueryExtractionNode", "semanticSearchAndAnswerNode")
-    // .addEdge("semanticSearchAndAnswerNode", "decideCourseListNode")
-    // .addEdge("decideCourseListNode", "validateOutputNode")
-    // .addEdge("validateOutputNode", "outputNode")
-    // .addConditionalEdges(START, initialFilteringEdge, {
-    //     true: "semanticSearchQueryExtractionNode",
-    //     false: END
-    // })
-
-    // .addNode("semanticSearchQueryExtractionNode", semanticSearchQueryExtractionNode)
-    // .addNode("testNode", testNode)
-    // .addEdge(START, "semanticSearchQueryExtractionNode")
-    // .addEdge("semanticSearchQueryExtractionNode", "testNode")
-    // .addEdge("testNode", END)
-
     .addNode("semanticSearchAndAnswerNode", semanticSearchAndAnswer)
-    .addEdge(START, "semanticSearchAndAnswerNode")
+    .addNode("semanticSearchQueryExtractionNode", semanticSearchQueryExtractionNode)
+    .addEdge(START, "semanticSearchQueryExtractionNode")
+    .addEdge("semanticSearchQueryExtractionNode", "semanticSearchAndAnswerNode")
     .addEdge("semanticSearchAndAnswerNode", END)
 
 const agent = agentGraph.compile()

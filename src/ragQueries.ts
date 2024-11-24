@@ -24,13 +24,13 @@ export const vectorSimilaritySearch = async (state: typeof GraphAnnotation.State
     console.log("vectorSimilaritySearch");
 
     const documents = await vectorStore.similaritySearchWithScore(state.semanticSearchQuery || state.rawUserChat, 10, );
+    console.log("inside vectorSimilaritySearch: ", documents);
+    
     // return the top 5 documents with the highest score 
     if (documents.length > 0) {
       const sortedDocuments = documents.sort((a, b) => b[1] - a[1]);
       return sortedDocuments.map((doc) => doc[0]).slice(0, 5);
     }
-
-    console.log("inside vectorSimilaritySearch: ", documents);
 
     return [];
 };
