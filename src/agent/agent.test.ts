@@ -9,7 +9,8 @@ testIfAgentTestsEnabled("normal user message", async () => {
         rawUserChat: "What courses are related to computer science?",
         retrievedDocuments: undefined,
         semanticSearchQuery: undefined,
-        messages: []
+        messages: [],
+        answer: ""
     }
     const result = await agent.invoke(initialState)
     

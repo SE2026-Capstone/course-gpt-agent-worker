@@ -21,8 +21,8 @@ export const GraphAnnotation = Annotation.Root({
     // retrieved course documents from ChromaDB
     retrievedDocuments: Annotation<any>, // TODO: type this
 
-    // answers field 
-    answers: Annotation<string[]>,
+    // answer field 
+    answer: Annotation<string>,
 
 
 })
@@ -240,78 +240,6 @@ Answer the question based on the above context: {question}
     }
 }
 
-
-const decideCourseList = async (state: typeof GraphAnnotation.State) => {
-    console.log("decideCourseList")
-    return
-}
-
-
-const validateOutput = async (state: typeof GraphAnnotation.State) => {
-    console.log("validateOutput")
-    const promptString = 
-`Your an AI that helps validate the output of the system.
-Validate that the system output is of the form described below.
-A JSON object that adheres to the following rules:
-
-# Rules
-{{
-    extracted_query: string,
-    explanation: string
-}}
-
-The extracted_query field should contain the extracted query snippet taken from the original user message.
-The explanation field should contain an explanation of the actions taken to extract the query. This explanation should be concise and to the point.
-
-# Output format
-If the output is not valid, return "Invalid"
-If the output is valid, return "Valid"
-`
-    return
-}
-
-// return json
-const outputNode = async (state: typeof GraphAnnotation.State) => {
-    console.log(JSON.stringify(state, null, 2))
-    return
-}
-
-const testNode = async (state: typeof GraphAnnotation.State): Promise<{ success: boolean }> => {
-    console.log("test");
-
-    const prompt = ChatPromptTemplate.fromTemplate(
-        `Your task is to analyze a user message and determine the correct response. 
-        The message subject is related to courses at the University of Waterloo.
-        The user message is given below:
-        ${state.rawUserChat}`
-    );
-
-    const model = new ChatOpenAI({
-        openAIApiKey: OPENAI_API_KEY,
-        temperature: 0,
-        modelName: "gpt-4o-mini"
-    }).bind({
-        response_format: { type: "text" }
-    });
-
-    const chain = prompt.pipe(model);
-
-    try {
-        if (!state.rawUserChat) {
-            throw new Error("rawUserChat is undefined or empty.");
-        }
-
-        const response = await chain.invoke({
-            userMessage: state.rawUserChat
-        });
-
-        console.log("response", response);
-        return { success: true };
-    } catch (e) {
-        console.error("Error:", e);
-        return { success: false };
-    }
-};
 
 // graph compilation
 const agentGraph = new StateGraph(GraphAnnotation)
