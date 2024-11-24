@@ -18,7 +18,7 @@ async function testIfAgentTestsEnabled() {
         retrievedDocuments: undefined,
         semanticSearchQuery: undefined,
         messages: [],
-        answers: []
+        answer: ""
     }
     const result = await agent.invoke(initialState)
     
