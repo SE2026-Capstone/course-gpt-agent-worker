@@ -283,22 +283,68 @@ const outputNode = async (state: typeof GraphAnnotation.State) => {
     return
 }
 
+const testNode = async (state: typeof GraphAnnotation.State): Promise<{ success: boolean }> => {
+    console.log("test");
+
+    const prompt = ChatPromptTemplate.fromTemplate(
+        `Your task is to analyze a user message and determine the correct response. 
+        The message subject is related to courses at the University of Waterloo.
+        The user message is given below:
+        ${state.rawUserChat}`
+    );
+
+    const model = new ChatOpenAI({
+        openAIApiKey: OPENAI_API_KEY,
+        temperature: 0,
+        modelName: "gpt-4o-mini"
+    }).bind({
+        response_format: { type: "text" }
+    });
+
+    const chain = prompt.pipe(model);
+
+    try {
+        if (!state.rawUserChat) {
+            throw new Error("rawUserChat is undefined or empty.");
+        }
+
+        const response = await chain.invoke({
+            userMessage: state.rawUserChat
+        });
+
+        console.log("response", response);
+        return { success: true };
+    } catch (e) {
+        console.error("Error:", e);
+        return { success: false };
+    }
+};
+
 // graph compilation
 const agentGraph = new StateGraph(GraphAnnotation)
-    .addNode("semanticSearchQueryExtractionNode", semanticSearchQueryExtractionNode)
+    // .addNode("semanticSearchQueryExtractionNode", semanticSearchQueryExtractionNode)
+    // .addNode("semanticSearchAndAnswerNode", semanticSearchAndAnswer)
+    // .addNode("decideCourseListNode", decideCourseList)
+    // .addNode("validateOutputNode", validateOutput)
+    // .addNode("outputNode", outputNode)
+    // .addEdge("semanticSearchQueryExtractionNode", "semanticSearchAndAnswerNode")
+    // .addEdge("semanticSearchAndAnswerNode", "decideCourseListNode")
+    // .addEdge("decideCourseListNode", "validateOutputNode")
+    // .addEdge("validateOutputNode", "outputNode")
+    // .addConditionalEdges(START, initialFilteringEdge, {
+    //     true: "semanticSearchQueryExtractionNode",
+    //     false: END
+    // })
+
+    // .addNode("semanticSearchQueryExtractionNode", semanticSearchQueryExtractionNode)
+    // .addNode("testNode", testNode)
+    // .addEdge(START, "semanticSearchQueryExtractionNode")
+    // .addEdge("semanticSearchQueryExtractionNode", "testNode")
+    // .addEdge("testNode", END)
+
     .addNode("semanticSearchAndAnswerNode", semanticSearchAndAnswer)
-    .addNode("decideCourseListNode", decideCourseList)
-    .addNode("validateOutputNode", validateOutput)
-    .addNode("outputNode", outputNode)
-    .addEdge("semanticSearchQueryExtractionNode", "semanticSearchAndAnswerNode")
-    .addEdge("semanticSearchAndAnswerNode", "decideCourseListNode")
-    .addEdge("decideCourseListNode", "validateOutputNode")
-    .addEdge("validateOutputNode", "outputNode")
-    .addConditionalEdges(START, initialFilteringEdge, {
-        true: "semanticSearchQueryExtractionNode",
-        false: END
-    })
-    
+    .addEdge(START, "semanticSearchAndAnswerNode")
+    .addEdge("semanticSearchAndAnswerNode", END)
 
 const agent = agentGraph.compile()
 

@@ -13,13 +13,12 @@ const embeddings = new OpenAIEmbeddings({
 });
 
 const vectorStore = new Chroma(embeddings, {
-    collectionName: "uw-courses-test",
-    url: "http://localhost:8080", // Optional, will default to this value
-    collectionMetadata: {
+  collectionName: "uw-courses-test-4",
+  url: "http://localhost:8000",
+  collectionMetadata: {
       "hnsw:space": "cosine",
-    }, // Optional, can be used to specify the distance method of the embedding space https://docs.trychroma.com/usage-guide#changing-the-distance-function
-  });
-
+  },
+});
 
 export const vectorSimilaritySearch = async (state: typeof GraphAnnotation.State) => {
     console.log("vectorSimilaritySearch");
@@ -30,6 +29,8 @@ export const vectorSimilaritySearch = async (state: typeof GraphAnnotation.State
       const sortedDocuments = documents.sort((a, b) => b[1] - a[1]);
       return sortedDocuments.map((doc) => doc[0]).slice(0, 5);
     }
+
+    console.log("inside vectorSimilaritySearch: ", documents);
 
     return [];
 };
