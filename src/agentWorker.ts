@@ -23,10 +23,9 @@ const agentWorker = new Worker(CHAT_JOB_QUEUE_NAME, async (job) => {
 		answer: ""
     }
     const result = await agent.invoke(initialState)
-	console.log(result)
 
 	// write values to redis
-	return "temp"
+	return result.answer
 }, {
 	concurrency: WORKER_CONCURRENCY,
 	autorun: false,
