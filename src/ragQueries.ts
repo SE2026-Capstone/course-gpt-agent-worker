@@ -21,10 +21,8 @@ const vectorStore = new Chroma(embeddings, {
 });
 
 export const vectorSimilaritySearch = async (state: typeof GraphAnnotation.State) => {
-    console.log("vectorSimilaritySearch");
 
     const documents = await vectorStore.similaritySearchWithScore(state.semanticSearchQuery || state.rawUserChat, 10, );
-    console.log("inside vectorSimilaritySearch: ", documents);
     
     // return the top 5 documents with the highest score 
     if (documents.length > 0) {
@@ -34,7 +32,3 @@ export const vectorSimilaritySearch = async (state: typeof GraphAnnotation.State
 
     return [];
 };
-
-// hybrid search 
-
-// term based match making 

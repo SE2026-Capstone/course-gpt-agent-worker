@@ -30,7 +30,6 @@ export const GraphAnnotation = Annotation.Root({
 
 // filter unrelated, inappropriate or incomprehensible messages
 const initialFilteringEdge = async (state: typeof GraphAnnotation.State): Promise<string> => {
-    console.log("initialFilteringEdge")
     const prompt = ChatPromptTemplate.fromTemplate(
 `Your task is to analyze a user message and determine if the message satisfies the following criteria:
 
@@ -85,7 +84,6 @@ The user message is given below:
 
 // extract semantic search query
 const semanticSearchQueryExtractionNode = async (state: typeof GraphAnnotation.State) => {
-    console.log("semanticSearchQueryExtractionNode")
     const promptString = 
 `You are an AI that helps extract semantic search queries from user messages.
 
@@ -199,14 +197,10 @@ The explanation field should contain an explanation of the actions taken to extr
 }
 
 const semanticSearchAndAnswer = async (state: typeof GraphAnnotation.State) => {
-    console.log("semanticSearchAndAnswer")
-    console.log('state', state);
     // RAG search on chromadb + filter 
     const documents  = await vectorSimilaritySearch(state);
-    console.log("documents", documents);
 
     const context = documents.map((doc) =>`Course Name: ${doc.metadata.id}\nCourse Content:${doc.pageContent}`).join("\n\n") 
-    console.log('context', context); 
 
     const promptString = `
 You are a helpful assistant that can answer questions about the context.
@@ -230,8 +224,6 @@ Answer the question based on the above context: {question}
         context: context,
         question: state.rawUserChat
     })
-
-    console.log("response", response);
 
     
     return {
