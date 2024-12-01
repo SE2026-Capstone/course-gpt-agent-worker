@@ -5,6 +5,7 @@ import {START, END} from "@langchain/langgraph"
 import {z} from "zod"
 import "dotenv/config"
 import { vectorSimilaritySearch } from "../ragQueries"
+import { Course } from "../types/course"
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY
 
@@ -19,7 +20,7 @@ export const GraphAnnotation = Annotation.Root({
     semanticSearchQuery: Annotation<string|undefined>,
 
     // retrieved course documents from ChromaDB
-    retrievedDocuments: Annotation<any>, // TODO: type this
+    retrievedDocuments: Annotation<Course[]>, // TODO: type this
 
     // answer field 
     answer: Annotation<string>,
@@ -198,9 +199,17 @@ The explanation field should contain an explanation of the actions taken to extr
 
 const semanticSearchAndAnswer = async (state: typeof GraphAnnotation.State) => {
     // RAG search on chromadb + filter 
-    const documents  = await vectorSimilaritySearch(state);
+    const documents = await vectorSimilaritySearch(state);
 
-    const context = documents.map((doc) =>`Course Name: ${doc.metadata.id}\nCourse Content:${doc.pageContent}`).join("\n\n") 
+    const context = documents.map((doc) =>`Course Name: ${doc[0].metadata.id}\nCourse Content:${doc[0].pageContent}`).join("\n\n") 
+
+    // build list of documents for frontend 
+    const retrievedDocuments : Course[] = documents.map((doc) => ({
+        courseCode: doc[0].metadata.id,
+        courseName: doc[0].metadata.metadata,
+        courseDescription: doc[0].pageContent,
+        relevanceScore: doc[1],
+    }))
 
     const promptString = `
 You are a helpful assistant that can answer questions about the context.
@@ -228,7 +237,7 @@ Answer the question based on the above context: {question}
     
     return {
         answer: response.content.toString(),
-        retrievedDocuments: documents
+        retrievedDocuments,
     }
 }
 

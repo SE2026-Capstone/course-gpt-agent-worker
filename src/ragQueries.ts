@@ -26,8 +26,8 @@ export const vectorSimilaritySearch = async (state: typeof GraphAnnotation.State
     
     // return the top 5 documents with the highest score 
     if (documents.length > 0) {
-      const sortedDocuments = documents.sort((a, b) => b[1] - a[1]);
-      return sortedDocuments.map((doc) => doc[0]).slice(0, 5);
+      const sortedDocuments = documents.sort((a, b) => b[1] - a[1]); // sort by score 
+      return sortedDocuments.slice(0, 5); 
     }
 
     return [];
