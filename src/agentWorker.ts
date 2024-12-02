@@ -13,7 +13,6 @@ const redisConnection = new Redis(REDIS_URL, {
 })
 
 const agentWorker = new Worker(CHAT_JOB_QUEUE_NAME, async (job) => {
-	console.log(job?.data?.user_email)
 
 	// run the graph agent
 	const initialState: typeof GraphAnnotation.State = {
@@ -25,8 +24,10 @@ const agentWorker = new Worker(CHAT_JOB_QUEUE_NAME, async (job) => {
     }
     const result = await agent.invoke(initialState)
 
+	console.log(result)
+
 	const response: AgentResponse = {
-		answer: result.answer,
+		chat: result.answer,
 		courseList: result.retrievedDocuments
 	}
 

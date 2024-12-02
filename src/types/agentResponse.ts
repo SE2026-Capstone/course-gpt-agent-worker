@@ -1,6 +1,6 @@
 import { Course } from "./course";
 
 export interface AgentResponse {
-    answer: string;
+    chat: string;
     courseList: Course[]; 
 }
