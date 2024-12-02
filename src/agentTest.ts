@@ -11,7 +11,7 @@ dotenv.config({ path: path.resolve(__dirname, "../.env") });
 async function testIfAgentTestsEnabled() {
     const initialState: typeof GraphAnnotation.State = {
         rawUserChat: "What is a cool introductory Artificial Intelligence course?",
-        retrievedDocuments: undefined,
+        retrievedDocuments: [],
         semanticSearchQuery: undefined,
         messages: [],
         answer: ""
