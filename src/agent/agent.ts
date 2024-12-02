@@ -170,8 +170,6 @@ The explanation field should contain an explanation of the actions taken to extr
         ["human", "{input}"]
     ])
 
-    console.log((await prompt.invoke({input: state.rawUserChat})).toChatMessages())
-
     const response = await prompt.pipe(new ChatOpenAI({
         openAIApiKey: OPENAI_API_KEY,
         temperature: 0,
@@ -192,8 +190,7 @@ The explanation field should contain an explanation of the actions taken to extr
             semanticSearchQuery: result.extracted_query,
         }
     } catch (e) {
-        console.log("error", e)
-        return null
+        throw e;
     }
 }
 

@@ -7,7 +7,7 @@ const testIfAgentTestsEnabled = (process.env.ENABLE_AGENT_TESTS === "true") ? te
 testIfAgentTestsEnabled("normal user message", async () => {
     const initialState: typeof GraphAnnotation.State = {
         rawUserChat: "What courses are related to computer science?",
-        retrievedDocuments: undefined,
+        retrievedDocuments: [],
         semanticSearchQuery: undefined,
         messages: [],
         answer: ""
