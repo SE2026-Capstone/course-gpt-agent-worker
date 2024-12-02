@@ -238,14 +238,128 @@ Answer the question based on the above context: {question}
     }
 }
 
+const retrieveCourseNode = async (state: typeof GraphAnnotation.State) => {
+
+    console.log("Retrieving course data...");
+    try {
+        if (!state.rawUserChat) {
+            throw new Error("rawUserChat is undefined or empty.");
+        }
+
+        // Define the prompt for the LLM
+        const promptString = `
+You are an AI assistant tasked with generating detailed course information based on a user's query. 
+The user is asking about university courses. Your task is to:
+
+1. Generate a list of 3-5 relevant courses based on the query.
+2. Each course should include:
+   - Course Code (e.g., "CS101", "ENG202").
+   - Course Name (e.g., "Introduction to Computer Science").
+   - Course Description (a brief summary of the course content, 2-3 sentences).
+   - Relevance Score (a number between 0 and 1, where 1 indicates the most relevant).
+
+Return the response in JSON format adhering to this structure:
+[
+  {
+    "courseCode": "string",
+    "courseName": "string",
+    "courseDescription": "string",
+    "relevanceScore": number
+  },
+  ...
+]
+
+User's query:
+{userMessage}
+`;
+
+        // Initialize the LLM
+        // use prompt to get answer 
+        const prompt = ChatPromptTemplate.fromMessages([
+            ["system", promptString]
+        ]);
+        
+        console.log("Invoking LLM...");
+
+        const response = await prompt.pipe(new ChatOpenAI({
+            openAIApiKey: OPENAI_API_KEY,
+            temperature: 0,
+            modelName: "gpt-4o-mini"
+        })).invoke({
+            userMessage: state.rawUserChat,
+        });
+    
+
+        console.log("Response from LLM:", response.content.toString());
+
+        // Parse the response into the Course array
+        const responseSchema = z.array(
+            z.object({
+                courseCode: z.string(),
+                courseName: z.string(),
+                courseDescription: z.string(),
+                relevanceScore: z.number().min(0).max(1),
+            })
+        );
+
+        const retrievedDocuments = responseSchema.parse(JSON.parse(response.content.toString()));
+
+        // Log for debugging
+        console.log("Generated Courses:", retrievedDocuments);
+
+        // Return both the synthetic courses and a generated answer
+        return {
+            answer: "Here is a list of courses based on your query.",
+            retrievedDocuments,
+        };
+    } catch (e) {
+        console.error("Error in testNode:", e);
+        return { success: false };
+    }
+};
+
+const answerNode = async (state: typeof GraphAnnotation.State) => {
+    console.log("Answering question...");
+    const context = state.retrievedDocuments.map((doc) =>`Course Name: ${doc.courseName}\nCourse Content:${doc.courseDescription}`).join("\n\n") 
+
+    const promptString = `
+You are a helpful assistant that can answer questions about the context.
+Answer the question based only on the following context:
+{context}
+ - -
+Answer the question based on the above context: {question}
+`
+
+    // use prompt to get answer 
+    const prompt = ChatPromptTemplate.fromMessages([
+        ["system", promptString]
+    ]);
+    
+
+    const response = await prompt.pipe(new ChatOpenAI({
+        openAIApiKey: OPENAI_API_KEY,
+        temperature: 0,
+        modelName: "gpt-4o-mini"
+    })).invoke({
+        context: context,
+        question: state.rawUserChat
+    })
+
+    console.log("Answer from LLM:", response.content.toString());
+
+    
+    return {
+        answer: response.content.toString(),
+    }
+}
 
 // graph compilation
 const agentGraph = new StateGraph(GraphAnnotation)
-    .addNode("semanticSearchAndAnswerNode", semanticSearchAndAnswer)
-    .addNode("semanticSearchQueryExtractionNode", semanticSearchQueryExtractionNode)
-    .addEdge(START, "semanticSearchQueryExtractionNode")
-    .addEdge("semanticSearchQueryExtractionNode", "semanticSearchAndAnswerNode")
-    .addEdge("semanticSearchAndAnswerNode", END)
+    .addNode("retrieveCourseNode", retrieveCourseNode)
+    .addNode("answerNode", answerNode)
+    .addEdge(START, "retrieveCourseNode")
+    .addEdge("retrieveCourseNode", "answerNode")
+    .addEdge("answerNode", END)
 
 const agent = agentGraph.compile()
 
