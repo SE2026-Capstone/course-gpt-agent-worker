@@ -16,7 +16,7 @@ const agentWorker = new Worker(CHAT_JOB_QUEUE_NAME, async (job) => {
 
 	// run the graph agent
 	const initialState: typeof GraphAnnotation.State = {
-        rawUserChat: "What courses are related to computer science?",
+        rawUserChat: job.data,
         retrievedDocuments: [],
         semanticSearchQuery: undefined,
         messages: [],
